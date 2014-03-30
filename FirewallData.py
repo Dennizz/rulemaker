@@ -83,6 +83,6 @@ def CreateFirewallModel(hostname,username):
 	dev.close()
 	return firewall
 
+#Put zones that you want to exclude here
 zoneExcludeList = [
-	'Avira',
 ]
