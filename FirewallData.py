@@ -1,5 +1,4 @@
 from jnpr.junos import Device
-import json
 
 def connect(hostname,username):
 	dev = Device(hostname,username)
