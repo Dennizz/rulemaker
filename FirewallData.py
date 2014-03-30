@@ -85,4 +85,8 @@ def CreateFirewallModel(hostname,username):
 
 #Put zones that you want to exclude here
 zoneExcludeList = [
+<<<<<<< HEAD
+=======
+	'trust',
+>>>>>>> 779a579bb1dae2e9438044c39454ed1ca8f6f8de
 ]
