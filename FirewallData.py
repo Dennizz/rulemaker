@@ -84,5 +84,5 @@ def CreateFirewallModel(hostname,username):
 	return firewall
 
 zoneExcludeList = [
-	'Avira',
+	'trust',
 ]
