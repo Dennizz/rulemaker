@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 class Firewall(models.Model):
-	hostname	=       models.CharField(max_length=256)
+	hostname	=   models.CharField(max_length=256)
 	username	=	models.CharField(max_length=256)
 	location	=	models.CharField(max_length=256)
 	def __unicode__(self):
@@ -49,7 +49,8 @@ class ApplicationSet(models.Model):
 
 class Policy(models.Model):
 	firewall	=	models.ForeignKey(Firewall)
-	name		=	models.CharField(max_length=256)	
+	name		=	models.CharField(max_length=256)
+	state		=	models.CharField(max_length=256) #needs to be converted to a choice or bool field for states active/inactive	
 	fromZone	=	models.ForeignKey(Zone, related_name='fromZone')
 	toZone		=	models.ForeignKey(Zone, related_name='toZone')
 	srcAddress	=	models.ManyToManyField(Address, null=True, blank=True, related_name='srcAddress')
