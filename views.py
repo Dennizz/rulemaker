@@ -18,22 +18,20 @@ def updateFirewall(request,firewall):
 
 	#Create applications in database
 	for appName,values in data['applications'].iteritems():
-		#Not all applications have destination ports, so we need to check if the key exists and otherwise create a key with an empty value
-		if not 'destPort' in values:
-			values['destPort'] = ''
-		ApplicationModel = Application(firewall = firewall,	name = appName,	protocol = values['protocol'], destPort = values['destPort'] )
+		ApplicationModel = Application(firewall = firewall, name = appName)
 		ApplicationModel.save()
+		for appData in values:
+			ApplicationPortModel = ApplicationPort(firewall = firewall, application = ApplicationModel, protocol = appData['protocol'], destPort = appData['destPort'])
+			ApplicationPortModel.save()
 
 	#Create application sets in database
 	for appSetName, values in data['applicationSets'].iteritems():
 		ApplicationSetModel = ApplicationSet(firewall = firewall, name = appSetName )
 		ApplicationSetModel.save()
-
 		for app in values:
 			appObject = Application.objects.get(name = app, firewall = firewall)
-			appSet = ApplicationSet.objects.get(name = appSetName, firewall = firewall)
-			appSet.applications.add(appObject)
-			appSet.save()
+			ApplicationSetModel.applications.add(appObject)
+		ApplicationSetModel.save()
 
 	#Create zones and address objects
 	for zone, addresses in data['zones'].iteritems():
@@ -48,6 +46,14 @@ def updateFirewall(request,firewall):
 				Addressmodel = Address(firewall = firewall, zone = zoneObject, name = name, address = address, netmaskLength = netmaskLength)
 				Addressmodel.save()
 
+			#Add default addresses any, any-ipv4 and any-ipv6 for all zones
+			Addressmodel = Address(firewall = firewall, zone = zoneObject, name = 'any', address = '0.0.0.0', netmaskLength = '0')
+			Addressmodel.save()
+			Addressmodel = Address(firewall = firewall, zone = zoneObject, name = 'any-ipv6', address = '0::', netmaskLength = '0')
+			Addressmodel.save()
+			Addressmodel = Address(firewall = firewall, zone = zoneObject, name = 'any-ipv4', address = '0.0.0.0', netmaskLength = '0')
+			Addressmodel.save()
+
 			for name, values in addresses['addressSets'].iteritems():
 				addressSetModel = AddressSet(firewall = firewall, zone = zoneObject, name = name)
 				addressSetModel.save()
@@ -57,5 +63,37 @@ def updateFirewall(request,firewall):
 					addressObject = Address.objects.get(firewall = firewall, zone = zoneObject, name = address)
 					addressSet.addresses.add(addressObject)
 					addressSet.save()
+
+	#Create policy objects
+	for fromZone,fromZoneData in data['policies'].iteritems():
+		fromZoneObject = Zone.objects.get(firewall = firewall, name = fromZone)
+		for entry in fromZoneData:
+			for toZone, toZoneData, in entry.iteritems():
+				toZoneObject = Zone.objects.get(firewall = firewall, name = toZone)
+				for policy, policyData in toZoneData.iteritems():
+					policyModel = Policy(firewall = firewall, name = policy, fromZone = fromZoneObject, toZone = toZoneObject, state=policyData['state'], action=policyData['action'])
+					policyModel.save()
+					policyObject = Policy.objects.get(firewall = firewall, name = policy, fromZone = fromZoneObject, toZone = toZoneObject)
+					for source in policyData['sources']:
+						try:
+							sourceObject = Address.objects.get(firewall = firewall, zone = fromZoneObject, name = source)
+							policyObject.srcAddress.add(sourceObject)
+						except:
+							sourceObject = AddressSet.objects.get(firewall = firewall, zone = fromZoneObject, name = source)
+							policyModel.srcAddressSet.add(sourceObject)
+					for destination in policyData['destinations']:
+						try:
+							destinationObject = Address.objects.get(firewall = firewall, zone = toZoneObject, name = destination)
+							policyObject.dstAddress.add(destinationObject)
+						except:
+							destinationObject = AddressSet.objects.get(firewall = firewall, zone = toZoneObject, name = destination)
+							policyModel.dstAddressSet.add(destinationObject)
+					for application in policyData['applications']:
+						try:
+							applicationObject = Application.objects.get(firewall = firewall, name = application)
+							policyObject.application.add(applicationObject)
+						except:
+							applicationObject = ApplicationSet.objects.get(firewall = firewall, name = application)
+							policyModel.applicationSet.add(applicationObject)
 
 	return render_to_response( "rulemaker/index.html", {'data' : data} )
