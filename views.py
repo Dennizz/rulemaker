@@ -3,6 +3,13 @@ from models import *
 from FirewallData import CreateFirewallModel, zoneExcludeList
 # Create your views here.
 
+def ruleOverview(request, firewall, srcZone, dstZone):
+	firewall = Firewall.objects.get(hostname = firewall)
+	fromZone = Zone.objects.get(firewall = firewall, name = srcZone)
+	toZone = Zone.objects.get(firewall = firewall, name = dstZone)
+	policies = Policy.objects.filter(firewall = firewall, fromZone = fromZone, toZone = toZone)
+	return render_to_response( "rulemaker/ruleOverview.html", {'policies' : policies} )
+
 def updateFirewall(request,firewall):
 	#This function fetches all relevant data from a Juniper firewall, clears all current data for this firewall in the database and then stores the current data.
 	firewall = Firewall.objects.get(hostname = firewall)
