@@ -1,28 +1,31 @@
-{% for policy in  policies %}
-	<br>name: {{ policy.name }}
-	<br>source addresses: 
-	{% for address in policy.srcAddress.all %}
-		{{ address.name }}
-	{% endfor %}
-	<br>source addressSets:
-	{% for addressSet in policy.srcAddressSet.all %}
-		{{ addressSet.name }}
-	{% endfor %}
-	<br>destination addresses:
-	{% for address in policy.dstAddress.all %}
-		{{ address.name }}
-	{% endfor %}
-	<br>destination addressSets:
-	{% for addressSet in policy.dstAddressSet.all %}
-		{{ addressSet.name }}
-	{% endfor %}
-	<br>applications: 
-	{% for application in policy.application.all %}
-		{{ application.name }}
-	{% endfor %}
-	<br>applicationsets: 
-	{% for applicationSet in policy.applicationSet.all %}
-		{{ applicationSet.name }}
-	{% endfor %}
-	<br>
-{% endfor %}
+ <form name="viewPolicies" method="post" action"" >
+ {% csrf_token %}
+ 	<table>
+ 		<tr>
+	 		<th>From Zone:</th>
+	 		<th>To Zone:</th>
+	 	</tr>
+	 	<tr>
+	 		<td>
+	 			<select id="fromZone" name="fromZone">
+  				<option  value="" selected="selected">Select Zone</option>
+  				{% for zone in zones %}
+  					<option value="{{zone.name}}">{{zone.name|capfirst}}</option>
+  				{% endfor %}
+				</select>
+	 		</td>
+	 		<td>
+	 			<select id="toZone" name="toZone">
+  				<option  value="" selected="selected">Select Zone</option>
+  				{% for zone in zones %}
+  					<option value="{{zone.name}}">{{zone.name|capfirst}}</option>
+  				{% endfor %}
+				</select>
+	 		</td>
+	 	</tr>
+    </table>
+    <input type="Submit" value="Show" />
+</form>
+
+{% block rules %}
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "rulemaker/ruleOverview.html" %}
+{% block rules %}
+{% for policy in  policies %}
+	<b>{{ policy.name }}</b>
+	<table border=1>
+		<tr>
+			<th>Sources:</th>
+			<th>Destinations:</th>
+			<th>Applications:</th>
+		</tr>
+		<tr>
+			<td>
+				{% for address in policy.srcAddress.all %}
+					<a href="../address/{{ firewall.hostname }}/{{ fromZone.name }}/{{ address.name }}">{{ address.name }}<br>
+				{% endfor %}
+				{% for addressSet in policy.srcAddressSet.all %}
+					<a href="../addressSet/{{ firewall.hostname }}/{{ fromZone.name }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
+				{% endfor %}
+			</td>
+			<td>
+				{% for address in policy.dstAddress.all %}
+					<a href="../address/{{ firewall.hostname }}/{{ toZone.name }}/{{ address.name }}">{{ address.name }}<br>
+				{% endfor %}
+				{% for addressSet in policy.dstAddressSet.all %}
+					<a href="../addressSet/{{ firewall.hostname }}/{{ toZone.name }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
+				{% endfor %}				
+			</td>
+			<td>
+				{% for application in policy.application.all %}
+					<a href="../application/{{ firewall.hostname }}/{{ application.name }}">{{ application.name }}<br>
+				{% endfor %}
+				{% for applicationSet in policy.applicationSet.all %}
+					<a href="../applicationSet/{{ firewall.hostname }}/{{ applicationSet.name }}">{{ applicationSet.name }}<br>
+				{% endfor %}				
+			</td>
+		</tr>
+	</table>
+	<br>
+{% endfor %}
+{% endblock %}
