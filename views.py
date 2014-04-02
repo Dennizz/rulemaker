@@ -1,6 +1,6 @@
 from django.shortcuts import render, render_to_response
 from models import *
-from FirewallData import CreateFirewallModel, zoneExcludeList
+from FirewallData import CreateFirewallModel
 # Create your views here.
 
 def ruleOverview(request, firewall, srcZone, dstZone):

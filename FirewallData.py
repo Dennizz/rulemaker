@@ -206,7 +206,7 @@ def CreateFirewallModel(hostname,username):
 		if not policyPairs['from-zone'] in firewall['policies']:
 			firewall['policies'][policyPairs['from-zone']] = []
 		firewall['policies'][policyPairs['from-zone']].append({policyPairs['to-zone'] : fetchPolicies(dev,policyPairs['from-zone'],policyPairs['to-zone'])})
-	if debug =1:
+	if debug == 1:
 		print json.dumps(firewall, indent=4)
 	dev.close()
 	return firewall
