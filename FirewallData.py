@@ -206,10 +206,7 @@ def CreateFirewallModel(hostname,username):
 		if not policyPairs['from-zone'] in firewall['policies']:
 			firewall['policies'][policyPairs['from-zone']] = []
 		firewall['policies'][policyPairs['from-zone']].append({policyPairs['to-zone'] : fetchPolicies(dev,policyPairs['from-zone'],policyPairs['to-zone'])})
-	#print json.dumps(firewall, indent=4)
+	if debug =1:
+		print json.dumps(firewall, indent=4)
 	dev.close()
 	return firewall
-
-#Put zones that you want to exclude here
-zoneExcludeList = [
-]

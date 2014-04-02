@@ -68,3 +68,9 @@ class Policy(models.Model):
 	applicationSet	=	models.ManyToManyField(ApplicationSet, null=True, blank=True)
 	def __unicode__(self):
 		return  unicode(self.name)
+
+class ExcludeZone(models.Model):
+	firewall	=	models.ForeignKey(Firewall)
+	name		=	models.CharField(max_length=256)
+	def __unicode__(self):
+		return  unicode(self.name)
