@@ -1,7 +1,7 @@
 from jnpr.junos import Device
 import json
 import time
-debug = 0
+debug = 1
 
 def connect(hostname,username):
 	dev = Device(hostname,user=username)
@@ -10,18 +10,9 @@ def connect(hostname,username):
 		print "Connected" + str(time.time())
 	return dev
 
-def fetchZones(dev):
+def parseAddresses(lines):
 	result = {}
-	for line in dev.cli("show configuration security zones").splitlines():
-		if line.startswith('security-zone'):
-			result[line.split()[1]]={}
-	if debug == 1:
-		print "Zones fetched" + str(time.time())
-	return result
-
-def fetchAddresses(dev,zone):
-	result = {}
-	for line in dev.cli("show configuration security zones security-zone " + str(zone) + ' address-book').splitlines():
+	for line in lines.splitlines():
 		if line.startswith('address-set'):
 			break
 		if line.startswith('address '):
@@ -36,14 +27,11 @@ def fetchAddresses(dev,zone):
 			continue
 		if '/' in line:
 			result[name] = line.split()[0].strip(';')
-			
-	if debug == 1:
-		print "Addresses fetched for zone " + str(zone)  + str(time.time())
 	return result
 
-def fetchAddressSets(dev,zone):
+def parseAddressSets(lines):
 	result = {}
-	for line in dev.cli("show configuration security zones security-zone " + str(zone) + ' address-book').splitlines():
+	for line in lines.splitlines():
 		if line.startswith('address '):
 			continue
 		if line.startswith('address-set'):
@@ -51,6 +39,34 @@ def fetchAddressSets(dev,zone):
 			result[addressSetName] = []
 		if 'address ' in line:
 			result[addressSetName].append(line.split()[1].strip(';'))
+	return result
+
+
+def fetchGlobalAddressBookAddress(dev):
+	result = parseAddresses(dev.cli("show configuration security address-book global"))
+	return result
+
+def fetchGlobalAddressBookAddressSet(dev):
+	result = parseAddressSets(dev.cli("show configuration security address-book global"))
+	return result
+
+def fetchZones(dev):
+	result = {}
+	for line in dev.cli("show configuration security zones").splitlines():
+		if line.startswith('security-zone'):
+			result[line.split()[1].strip(';')]={}
+	if debug == 1:
+		print "Zones fetched" + str(time.time())
+	return result
+
+def fetchAddresses(dev,zone):
+	result = parseAddresses(dev.cli("show configuration security zones security-zone " + str(zone) + ' address-book'))	
+	if debug == 1:
+		print "Addresses fetched for zone " + str(zone)  + str(time.time())
+	return result
+
+def fetchAddressSets(dev,zone):
+	result = parseAddressSets(dev.cli("show configuration security zones security-zone " + str(zone) + ' address-book'))
 	if debug == 1:
 		print "Address Sets fetched for zone " + str(zone)  + str(time.time())
 	return result
@@ -191,21 +207,19 @@ def CreateFirewallModel(hostname,username):
 	firewall['applicationSets'] = fetchApplicationSets(dev)
 	
 	for zone in firewall['zones']:
-		firewall['zones'][zone]['addresses'] = {}
-		addresses = fetchAddresses(dev,zone)
-		for name, address in addresses.iteritems():
-			firewall['zones'][zone]['addresses'][name]=address
-	
-		firewall['zones'][zone]['addressSets'] = {}
-		addressSets = fetchAddressSets(dev,zone)
-		for name, addressList in addressSets.iteritems():
-			firewall['zones'][zone]['addressSets'][name]=addressList
-	
+		firewall['zones'][zone]['addresses'] = fetchAddresses(dev,zone)
+		firewall['zones'][zone]['addressSets'] = fetchAddressSets(dev,zone)
+
+	firewall['zones']['global'] = {}
+	firewall['zones']['global']['addresses'] = fetchGlobalAddressBookAddress(dev)
+	firewall['zones']['global']['addressSets'] = fetchGlobalAddressBookAddressSet(dev)
+
 	firewall['policies'] = {}
 	for policyPairs in getPolicyRelations(dev):
 		if not policyPairs['from-zone'] in firewall['policies']:
 			firewall['policies'][policyPairs['from-zone']] = []
 		firewall['policies'][policyPairs['from-zone']].append({policyPairs['to-zone'] : fetchPolicies(dev,policyPairs['from-zone'],policyPairs['to-zone'])})
+
 	if debug == 1:
 		print json.dumps(firewall, indent=4)
 	dev.close()

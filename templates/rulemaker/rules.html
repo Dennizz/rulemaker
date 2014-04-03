@@ -11,18 +11,18 @@
 		<tr>
 			<td>
 				{% for address in policy.srcAddress.all %}
-					<a href="../address/{{ firewall.hostname }}/{{ fromZone.name }}/{{ address.name }}">{{ address.name }}<br>
+					<a href="../address/{{ firewall.hostname }}/{{ address.zone }}/{{ address.name }}">{{ address.name }}<br>
 				{% endfor %}
-				{% for addressSet in policy.srcAddressSet.all %}
-					<a href="../addressSet/{{ firewall.hostname }}/{{ fromZone.name }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
+			 	{% for addressSet in policy.srcAddressSet.all %}
+					<a href="../addressSet/{{ firewall.hostname }}/{{ address.zone }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
 				{% endfor %}
 			</td>
 			<td>
 				{% for address in policy.dstAddress.all %}
-					<a href="../address/{{ firewall.hostname }}/{{ toZone.name }}/{{ address.name }}">{{ address.name }}<br>
+					<a href="../address/{{ firewall.hostname }}/{{ address.zone }}/{{ address.name }}">{{ address.name }}<br>
 				{% endfor %}
 				{% for addressSet in policy.dstAddressSet.all %}
-					<a href="../addressSet/{{ firewall.hostname }}/{{ toZone.name }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
+					<a href="../addressSet/{{ firewall.hostname }}/{{ address.zone }}/{{ addressSet.name }}">{{ addressSet.name }}<br>
 				{% endfor %}				
 			</td>
 			<td>

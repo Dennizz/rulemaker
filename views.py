@@ -29,7 +29,7 @@ def viewApplicationSet(request, firewall, applicationSet):
 def ruleOverview(request, firewall):
 
 	firewall = Firewall.objects.get(hostname = firewall)
-	zones = Zone.objects.filter(firewall = firewall)
+	zones = Zone.objects.filter(firewall = firewall).order_by('name')
 
 	if request.method == 'POST': #Input validation needs to be added
 		srcZone = request.POST.get('fromZone')
@@ -37,7 +37,6 @@ def ruleOverview(request, firewall):
 		fromZone = Zone.objects.get(firewall = firewall, name = srcZone)
 		toZone = Zone.objects.get(firewall = firewall, name = dstZone)
 		policies = Policy.objects.filter(firewall = firewall, fromZone = fromZone, toZone = toZone)
-		print policies
 		return render_to_response( "rulemaker/rules.html", {'policies' : policies, 'zones' : zones, 'fromZone' : fromZone, 'toZone' : toZone, 'firewall' : firewall }, context_instance = RequestContext(request))
 	else:
 		return render_to_response( "rulemaker/ruleOverview.html", { 'zones' : zones }, context_instance = RequestContext(request))
@@ -109,6 +108,7 @@ def updateFirewall(request,firewall):
 					addressSet.save()
 
 	#Create policy objects
+	globalZone = Zone.objects.get(firewall = firewall, name = 'global')
 	for fromZone,fromZoneData in data['policies'].iteritems():
 		skip = 0
 		for ExcludedZone in zoneExcludeList:
@@ -133,15 +133,33 @@ def updateFirewall(request,firewall):
 									sourceObject = Address.objects.get(firewall = firewall, zone = fromZoneObject, name = source)
 									policyObject.srcAddress.add(sourceObject)
 								except:
-									sourceObject = AddressSet.objects.get(firewall = firewall, zone = fromZoneObject, name = source)
-									policyModel.srcAddressSet.add(sourceObject)
+									try:
+										sourceObject = AddressSet.objects.get(firewall = firewall, zone = fromZoneObject, name = source)
+										policyModel.srcAddressSet.add(sourceObject)
+									except:
+										try:
+											sourceObject = Address.objects.get(firewall = firewall, zone = globalZone, name = source)
+											policyModel.srcAddress.add(sourceObject)
+										except:
+											sourceObject = AddressSet.objects.get(firewall = firewall, zone = globalZone, name = source)
+											policyModel.srcAddressSet.add(sourceObject)
+										
 							for destination in policyData['destinations']:
 								try:
 									destinationObject = Address.objects.get(firewall = firewall, zone = toZoneObject, name = destination)
 									policyObject.dstAddress.add(destinationObject)
 								except:
-									destinationObject = AddressSet.objects.get(firewall = firewall, zone = toZoneObject, name = destination)
-									policyModel.dstAddressSet.add(destinationObject)
+									try:
+										destinationObject = AddressSet.objects.get(firewall = firewall, zone = toZoneObject, name = destination)
+										policyModel.dstAddressSet.add(destinationObject)
+									except:
+										try:
+											destinationObject = Address.objects.get(firewall = firewall, zone = globalZone, name = destination)
+											policyModel.dstAddress.add(destinationObject)
+										except:
+											destinationObject = AddressSet.objects.get(firewall = firewall, zone = globalZone, name = destination)
+											policyModel.dstAddressSet.add(destinationObject)
+								
 							for application in policyData['applications']:
 								try:
 									applicationObject = Application.objects.get(firewall = firewall, name = application)
