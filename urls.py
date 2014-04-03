@@ -5,6 +5,8 @@ from django.contrib import admin
 admin.autodiscover()
 
 urlpatterns = patterns('',
+    url(r'^$',  index,         name='index'),
+
     url(r'^ruleoverview/(?P<firewall>[^/]+)', ruleOverview, name='ruleOverview'),
     url(r'^updatefirewall/(?P<firewall>[^/]+)', updateFirewall, name='updateFirewall'),
     url(r'^address/(?P<firewall>[^/]+)/(?P<zone>[^/]+)/(?P<address>[^/]+)', viewAddress, name='viewAddress'),

@@ -1,30 +1,35 @@
-from django.shortcuts import render, render_to_response
+from django.shortcuts import render
 from django.template import Context, RequestContext
 from models import *
 from FirewallData import CreateFirewallModel
 # Create your views here.
 
+
+def index(request):
+	firewalls = Firewall.objects.all()
+	return render(request, 'rulemaker/index.html', {'firewalls': firewalls} )
+
 def viewAddress(request, firewall, zone, address):
 	firewall = Firewall.objects.get(hostname = firewall)
 	zone = Zone.objects.get(firewall = firewall, name = zone)
 	address = Address.objects.get(firewall = firewall, zone = zone, name = address)
-	return render_to_response( "rulemaker/viewAddress.html", {'address' : address} )
+	return render(requst, "rulemaker/viewAddress.html", {'address' : address} )
 
 def viewAddressSet(request, firewall, zone, addressSet):
 	firewall = Firewall.objects.get(hostname = firewall)
 	zone = Zone.objects.get(firewall = firewall, name = zone)
 	addressSet = Address.objects.get(firewall = firewall, zone = zone, name = addressSet)
-	return render_to_response( "rulemaker/viewAddress.html", {'addressSet' : addressSet} )
+	return render(request, "rulemaker/viewAddress.html", {'addressSet' : addressSet} )
 
 def viewApplication(request, firewall, application):
 	firewall = Firewall.objects.get(hostname = firewall)
 	application = Application.objects.get(firewall = firewall, name = application)
-	return render_to_response( "rulemaker/viewApplication.html", {'application' : application} )
+	return render(request, "rulemaker/viewApplication.html", {'application' : application} )
 
 def viewApplicationSet(request, firewall, applicationSet):
 	firewall = Firewall.objects.get(hostname = firewall)
 	application = ApplicationSet.objects.get(firewall = firewall, name = applicationSet)
-	return render_to_response( "rulemaker/viewApplicationSet.html", {'applicationSet' : applicationSet} )
+	return render(request, "rulemaker/viewApplicationSet.html", {'applicationSet' : applicationSet} )
 
 def ruleOverview(request, firewall):
 
@@ -37,9 +42,9 @@ def ruleOverview(request, firewall):
 		fromZone = Zone.objects.get(firewall = firewall, name = srcZone)
 		toZone = Zone.objects.get(firewall = firewall, name = dstZone)
 		policies = Policy.objects.filter(firewall = firewall, fromZone = fromZone, toZone = toZone)
-		return render_to_response( "rulemaker/rules.html", {'policies' : policies, 'zones' : zones, 'fromZone' : fromZone, 'toZone' : toZone, 'firewall' : firewall }, context_instance = RequestContext(request))
+		return render(request, "rulemaker/rules.html", {'policies' : policies, 'zones' : zones, 'fromZone' : fromZone, 'toZone' : toZone, 'firewall' : firewall } )
 	else:
-		return render_to_response( "rulemaker/ruleOverview.html", { 'zones' : zones }, context_instance = RequestContext(request))
+		return render(request, "rulemaker/ruleOverview.html", { 'zones' : zones } )
 
 def updateFirewall(request,firewall):
 	#This function fetches all relevant data from a Juniper firewall, clears all current data for this firewall in the database and then stores the current data.
@@ -168,4 +173,4 @@ def updateFirewall(request,firewall):
 									applicationObject = ApplicationSet.objects.get(firewall = firewall, name = application)
 									policyModel.applicationSet.add(applicationObject)
 
-	return render_to_response( "rulemaker/index.html", {'data' : data} )
+	return render(request, "rulemaker/index.html", {'data' : data} )

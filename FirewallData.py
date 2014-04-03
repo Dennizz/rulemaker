@@ -1,7 +1,7 @@
 from jnpr.junos import Device
 import json
 import time
-debug = 1
+debug = 0
 
 def connect(hostname,username):
 	dev = Device(hostname,user=username)
