@@ -1,31 +1,80 @@
- <form name="viewPolicies" method="post" action"" >
- {% csrf_token %}
- 	<table>
- 		<tr>
-	 		<th>From Zone:</th>
-	 		<th>To Zone:</th>
-	 	</tr>
-	 	<tr>
-	 		<td>
-	 			<select id="fromZone" name="fromZone">
-  				<option  value="" selected="selected">Select Zone</option>
-  				{% for zone in zones %}
-  					<option value="{{zone.name}}">{{zone.name|capfirst}}</option>
-  				{% endfor %}
-				</select>
-	 		</td>
-	 		<td>
-	 			<select id="toZone" name="toZone">
-  				<option  value="" selected="selected">Select Zone</option>
-  				{% for zone in zones %}
-  					<option value="{{zone.name}}">{{zone.name|capfirst}}</option>
-  				{% endfor %}
-				</select>
-	 		</td>
-	 	</tr>
-    </table>
-    <input type="Submit" value="Show" />
-</form>
+{% extends "base.html" %}
 
-{% block rules %}
+{% load url from future %}
+{% load bootstrap3 %}
+
+
+{% block breadcrumb %}
+  <li><a href="{% url "index" %}">Firewall</a></li>
+  <li class="active">Rules</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-lg-12">
+
+         <form action="" method="post" class="form-inline" role="form">
+            {% csrf_token %}
+            {% bootstrap_form form layout="inline" %}
+            <button type="submit" class="btn btn-primary">Show Policies</button>
+         </form>
+
+
+  </div>
+
+  <div class="col-lg-12">
+
+  {% if policies %}
+   <br />
+   <table class="table table-striped">
+     <tr>
+      <th>Name:</th>
+      <th>Sources:</th>
+      <th>Destinations:</th>
+      <th>Applications:</th>
+     </tr>
+
+     {% for policy in  policies %}
+     <tr>
+
+      <td>
+       <b>{{ policy.name }}</b>
+      </td>
+
+      <td>
+        {% for address in policy.srcAddress.all %}
+          <a href="{% url "viewAddress" firewall.hostname address.zone address.name %}">{{ address.name }}</a> <br />
+        {% endfor %}
+        {% for addressSet in policy.srcAddressSet.all %}
+          <a href="{% url "viewAddressSet" firewall.hostname address.zone addressSet.name %}">{{ addressSet.name }}</a> <br />
+        {% endfor %}
+      </td>
+
+      <td>
+        {% for address in policy.dstAddress.all %}
+          <a href="{% url "viewAddress" firewall.hostname address.zone address.name %}">{{ address.name }}</a> <br />
+        {% endfor %}
+        {% for addressSet in policy.dstAddressSet.all %}
+          <a href="{% url "viewAddressSet" firewall.hostname address.zone addressSet.name %}">{{ addressSet.name }}</a> <br />
+        {% endfor %}
+      </td>
+
+      <td>
+        {% for application in policy.application.all %}
+          <a href="{% url "viewApplication" firewall.hostname application.name %}">{{ application.name }}</a> <br />
+        {% endfor %}
+        {% for applicationSet in policy.applicationSet.all %}
+          <a href="{% url "viewApplicationSet" firewall.hostname applicationSet.name %}">{{ applicationSet.name }}</a> <br />
+        {% endfor %}
+      </td>
+     </tr>
+    {% endfor %}
+    </table>
+  {% endif %}
+
+ </div>
+</div>
+
+
 {% endblock %}

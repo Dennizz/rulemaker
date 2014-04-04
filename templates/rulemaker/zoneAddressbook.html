@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% load url from future %}
+{% load bootstrap3 %}
+
+
+{% block breadcrumb %}
+  <li><a href="{% url "index" %}">Firewall</a></li>
+  <li class="active">Addressbook</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-lg-6">
+
+   <h3>Addresses</h3>
+   <table class="table table-striped">
+     <tr>
+      <th>Name:</th>
+      <th>Address</th>
+      <th>Netmask Lenght:</th>
+     </tr>
+
+     {% for addr in  address|dictsort:"name.lower"%}
+     <tr>
+
+      <td>
+       {{ addr.name }}
+      </td>
+
+      <td>
+       {{ addr.address }}
+      </td>
+
+      <td>
+       {{ addr.netmaskLength }}
+      </td>
+
+     </tr>
+    {% endfor %}
+    </table>
+
+
+   <h3>Address Sets</h3>
+   <table class="table table-striped">
+     <tr>
+      <th>Name:</th>
+      <th>Addresses</th>
+     </tr>
+
+     {% for addrset in  addressset|dictsort:"name.lower"%}
+     <tr>
+
+      <td>
+       {{ addrset.name }}
+      </td>
+
+      <td>
+       {% for item in addrset.addresses.all %}
+	{{ item.name }}<br />
+       {% endfor %}
+      </td>
+
+     </tr>
+    {% endfor %}
+    </table>
+
+ </div>
+</div>
+
+
+{% endblock %}

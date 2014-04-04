@@ -1,7 +1,9 @@
 from django.shortcuts import render
 from django.template import Context, RequestContext
 from models import *
+from forms import *
 from FirewallData import CreateFirewallModel
+from itertools import chain
 # Create your views here.
 
 
@@ -9,11 +11,37 @@ def index(request):
 	firewalls = Firewall.objects.all()
 	return render(request, 'rulemaker/index.html', {'firewalls': firewalls} )
 
+
+def zoneOverview(request, firewall):
+	firewall = Firewall.objects.get(hostname = firewall)
+	zones = Zone.objects.filter(firewall = firewall)
+	return render(request, 'rulemaker/zoneOverview.html', {'zones': zones} )
+
+
+def zoneFromList(request, firewall, zone):
+	firewall = Firewall.objects.get(hostname = firewall)
+	zone       = Zone.objects.get(firewall = firewall, name = zone)
+	pass
+
+def zoneToList(request, firewall, zone):
+	firewall = Firewall.objects.get(hostname = firewall)
+	zone       = Zone.objects.get(firewall = firewall, name = zone)
+	pass
+
+def zoneAddressbook(request, firewall, zone):
+	firewall   = Firewall.objects.get(hostname = firewall)
+	zone       = Zone.objects.get(firewall = firewall, name = zone)
+	address    = Address.objects.filter(firewall = firewall, zone = zone)
+	addressSet = AddressSet.objects.filter(firewall = firewall, zone = zone)
+	return render(request, "rulemaker/zoneAddressbook.html", {'address' : address, 'addressset' : addressSet } )
+
+
+
 def viewAddress(request, firewall, zone, address):
 	firewall = Firewall.objects.get(hostname = firewall)
 	zone = Zone.objects.get(firewall = firewall, name = zone)
 	address = Address.objects.get(firewall = firewall, zone = zone, name = address)
-	return render(requst, "rulemaker/viewAddress.html", {'address' : address} )
+	return render(request, "rulemaker/viewAddress.html", {'address' : address} )
 
 def viewAddressSet(request, firewall, zone, addressSet):
 	firewall = Firewall.objects.get(hostname = firewall)
@@ -33,18 +61,27 @@ def viewApplicationSet(request, firewall, applicationSet):
 
 def ruleOverview(request, firewall):
 
-	firewall = Firewall.objects.get(hostname = firewall)
-	zones = Zone.objects.filter(firewall = firewall).order_by('name')
+	form = RuleOverviewForm(request.POST or None)
 
-	if request.method == 'POST': #Input validation needs to be added
-		srcZone = request.POST.get('fromZone')
-		dstZone = request.POST.get('toZone')
-		fromZone = Zone.objects.get(firewall = firewall, name = srcZone)
-		toZone = Zone.objects.get(firewall = firewall, name = dstZone)
+	firewall = Firewall.objects.get(hostname = firewall)
+	zones = Zone.objects.filter(firewall = firewall).order_by('name').extra( select={'lower_name': 'lower(name)'}).order_by('lower_name')
+
+	choices = []
+	for item in zones:
+		choices.append((item.name, item.name))
+
+	form.fields['fromzone'].choices = choices
+	form.fields['tozone'].choices = choices
+
+	if form.is_valid():
+		fromZone = Zone.objects.get(firewall = firewall, name = request.POST.get('fromzone') )
+		toZone   = Zone.objects.get(firewall = firewall, name = request.POST.get('tozone') )
 		policies = Policy.objects.filter(firewall = firewall, fromZone = fromZone, toZone = toZone)
-		return render(request, "rulemaker/rules.html", {'policies' : policies, 'zones' : zones, 'fromZone' : fromZone, 'toZone' : toZone, 'firewall' : firewall } )
-	else:
-		return render(request, "rulemaker/ruleOverview.html", { 'zones' : zones } )
+		return render(request, 'rulemaker/ruleOverview.html', { 'firewall': firewall, 'form': form, 'policies': policies} )
+
+	return render(request, "rulemaker/ruleOverview.html", { 'firewall': firewall, 'form': form } )
+
+
 
 def updateFirewall(request,firewall):
 	#This function fetches all relevant data from a Juniper firewall, clears all current data for this firewall in the database and then stores the current data.

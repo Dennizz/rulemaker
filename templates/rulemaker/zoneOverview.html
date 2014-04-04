@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% load url from future %}
+{% load bootstrap3 %}
+
+
+{% block breadcrumb %}
+  <li><a href="{% url "index" %}">Firewall</a></li>
+  <li class="active">Rules</li>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+  <div class="col-lg-5">
+
+   <table class="table table-condensed table-hover">
+     <tr>
+      <th>Name:</th>
+      <th>Actions:</th>
+     </tr>
+
+     {% for zone in zones|dictsort:"name.lower" %}
+     <tr>
+
+      <td>
+       {{ zone.name|lower|capfirst }}
+      </td>
+
+      <td>
+  	<a href="#" class="btn btn-default btn-xs" role="button" data-toggle="tooltip" data-placement="top" title="Policies to"><span class="glyphicon glyphicon-import"></span></a>
+  	<a href="#" class="btn btn-default btn-xs" role="button" data-toggle="tooltip" data-placement="top" title="Policies from"><span class="glyphicon glyphicon-export"></span></a>
+  	<a href="{% url "zoneAddressbook" zone.firewall zone.name %}" class="btn btn-default btn-xs" role="button" data-toggle="tooltip" data-placement="top" title="Addressbook"><span class="glyphicon glyphicon-book"></span></a>
+      </td>
+
+     </tr>
+    {% endfor %}
+    </table>
+
+
+ </div>
+</div>
+
+
+{% endblock %}
